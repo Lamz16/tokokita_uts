@@ -68,7 +68,7 @@ class Main extends CI_Controller {
 
     public function home()
     {
-    $this->load->view('home/layout/header1');
+    $this->load->view('home/layout/header');
     $this->load->view('home/layanan');
     $this->load->view('home/home');
     $this->load->view('home/layout/footer');
@@ -108,9 +108,12 @@ class Main extends CI_Controller {
 
                     if($member->statusAktif=='Y'){
                     // Buat session
-                    $this->session->set_userdata('logged_in', TRUE);
-                    $this->session->set_userdata('member_id', $member->idKonsumen);
-                    $this->session->set_userdata('member_username', $member->username);
+                    $data = array(
+                        'member_id'=> $member->idKonsumen,
+                        'member_username'=> $username,
+                        'status'=> 'Aktif'
+                    );
+                    $this->session->set_userdata($data);
 
                     // Redirect ke halaman dashboard
                     redirect('main/home');
@@ -134,9 +137,7 @@ class Main extends CI_Controller {
     public function logout()
     {
     // hapus session data dan redirect ke halaman login
-    $this->session->unset_userdata('logged_in');
-    $this->session->unset_userdata('member_id');
-    $this->session->unset_userdata('member_username');
+    $this->session->sess_destroy();
     redirect('main/login');
     }
 
@@ -144,7 +145,7 @@ class Main extends CI_Controller {
     {
         $id = $this->session->userdata('member_id');
         $data['member'] = $this->Madmin->get_by_id('tbl_member', array('idKonsumen'=>$id))->row_object();
-        $this->load->view('home/layout/header1');
+        $this->load->view('home/layout/header');
         $this->load->view('home/edit_profile', $data);
         $this->load->view('home/layout/footer');
     }

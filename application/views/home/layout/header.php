@@ -123,7 +123,7 @@
             <?php else: ?>
             <div class="collapse navbar-collapse justify-content-between" id="navbarCollapse">
                 <div class="navbar-nav mr-auto py-0">
-                    <a href="<?php echo site_url('main/home'); ?>" class="nav-item nav-link">Beranda</a>
+                    <a href="<?php echo site_url('main/home'); ?>" class="nav-item nav-link ">Beranda</a>
                     <a href="<?php echo site_url('toko'); ?>" class="nav-item nav-link active">Toko</a>
                     <a href="detail.html" class="nav-item nav-link">Transaksi</a>
                 </div>
