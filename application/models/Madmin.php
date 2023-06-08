@@ -6,11 +6,6 @@ class Madmin extends CI_Model
         $q = $this->db->get_where('tbl_admin', array('userName'=>$u, 'password'=>$p));
         return $q;
     }
-    public function cek_loginMember($u, $p)
-    {
-        $q = $this->db->get_where('tbl_member', array('username'=>$u, 'password'=>$p));
-        return $q;
-    }
    public function get_all_data($table)
    {
     $q = $this->db->get($table);

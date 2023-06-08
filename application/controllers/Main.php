@@ -49,7 +49,6 @@ class Main extends CI_Controller {
             $data['statusAktif'] = 'Y';
 
             // Panggil model untuk insert data ke database
-            $this->load->model('Madmin');
             $this->Madmin->insert('tbl_member', $data);
 
             // Tampilkan pesan sukses dan redirect ke halaman login
@@ -172,9 +171,4 @@ class Main extends CI_Controller {
         $this->load->view('home/home');
         $this->load->view('home/layout/footer');
     }
-
-
-
-
-
 }

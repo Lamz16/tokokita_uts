@@ -101,7 +101,6 @@ class Toko extends CI_Controller
 
 public function delete($idToko)
 {
-    $where = array('idToko' => $idToko);
     $this->Madmin->delete('tbl_toko', 'idToko', $idToko);
     redirect('toko');
 }

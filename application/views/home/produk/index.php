@@ -11,6 +11,7 @@
                         <th scope="col">No</th>
                         <th scope="col">Nama Produk</th>
                         <th scope="col">Gambar</th>
+                        <th scope="col">Harga</th>
                         <th scope="col">Stok</th>
                         <th scope="col">Berat</th>
                         <th scope="col">Deskripsi</th>
@@ -31,8 +32,8 @@
                         <td><?php echo $val->deskripsiProduk; ?></td>
                         <td>
                         <div class="btn-group" role="group" aria-label="Basic example">
-                            <button type="button" class="btn btn-secondary"></button>
-                            <a href="<?php echo site_url('toko/delete/'.$val->idToko) ?>" class="btn btn-secondary" onclick="return confirm('Apakah anda yakin ingin menghapus toko ini?')">Delete</a>
+                            <a href="<?php echo site_url('produk/delete/'.$val->idProduk ) ?>" class="btn btn-secondary" onclick="return confirm('Apakah anda yakin ingin menghapus toko ini?')">Delete</a>
+                            <a href="<?php echo site_url('produk/edit/'.$val->idProduk) ?>" class="btn btn-secondary">Edit</a>
                         </div>
                         </td>
                     </tr>
