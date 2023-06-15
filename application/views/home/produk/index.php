@@ -32,8 +32,8 @@
                         <td><?php echo $val->deskripsiProduk; ?></td>
                         <td>
                         <div class="btn-group" role="group" aria-label="Basic example">
-                            <a href="<?php echo site_url('produk/delete/'.$val->idProduk ) ?>" class="btn btn-secondary" onclick="return confirm('Apakah anda yakin ingin menghapus toko ini?')">Delete</a>
-                            <a href="<?php echo site_url('produk/edit/'.$val->idProduk) ?>" class="btn btn-secondary">Edit</a>
+                        <a href="<?php echo site_url('produk/delete/'.$val->idProduk).'/'.$idToko;?>" onclick="return confirm('Yakin Akan Hapus Data Ini?')"><button type="button" class="btn btn-secondary">Hapus</button></a>
+                            <a href="<?php echo site_url('produk/get_by_id/'.$val->idProduk) ?>" class="btn btn-secondary">Edit</a>
                         </div>
                         </td>
                     </tr>
