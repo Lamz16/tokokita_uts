@@ -32,6 +32,22 @@ class Madmin extends CI_Model
    {
     $this->db->delete($table, array($id => $val));
    }
+   public function get_produk(){
+    $this->db->select('*');
+    $this->db->from('tbl_produk');
+    $this->db->join('tbl_toko','tbl_toko.idToko = tbl_produk.idToko');
+    $this->db->join('tbl_member','tbl_member.idKonsumen = tbl_toko.idKonsumen');
+    $q = $this->db->get();
+    return $q;
+   }	
+   public function get_kota_penjual($idToko){
+    $this->db->select('*');
+    $this->db->from('tbl_toko');
+    $this->db->join('tbl_member', 'tbl_member.idKonsumen = tbl_toko.idKonsumen');
+    $this->db->where('tbl_toko.idToko', $idToko);
+    $q = $this->db->get();
+    return $q;
+}
 }
 
 ?>

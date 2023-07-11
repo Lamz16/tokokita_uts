@@ -6,7 +6,7 @@
             <div class="col-lg-7 mb-5">
                 <div class="contact-form">   
                     <form name="sentMessage"  method="post" action="<?php echo site_url('produk/edit');?>" enctype="multipart/form-data">
-					<input type="hidden" name="idToko" value="<?php echo $idProduk->idToko;; ?>">
+					<input type="hidden" name="idToko" value="<?php echo $produk->idToko;; ?>">
                     <input type="hidden" name="idProduk" value="<?php echo $idProduk; ?>">
 					<div class="control-group">
                          <select class="form-control" name="kategori">
@@ -14,7 +14,7 @@
 							<option value="<?php echo $val->idkat; ?>" 
                             
                             <?php 
-                            if($val->idkat==$produk->idKat){
+                            if($val->idkat==$produk->idkat){
                                 echo "selected";
                             }
                             ?>

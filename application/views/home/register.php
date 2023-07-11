@@ -15,6 +15,18 @@
                             <p class="help-block text-danger"></p>
                         </div>
                         <div class="control-group">
+                            <select required id="province" class="form-control" id="name" name="province" placeholder="Provinsi">
+                                <option>Pilih Provinsi</option>
+                            </select>
+                            <p class="help-block text-danger"></p>
+                        </div>
+                        <div class="control-group">
+                            <select required id="city" class="form-control" id="name" name="city" placeholder="Kota">
+                                <option>Pilih Kota</option>
+                            </select>
+                            <p class="help-block text-danger"></p>
+                        </div>
+                        <div class="control-group">
                             <input type="password" class="form-control" id="password" name="password" placeholder="Your Password"
                                 required="required" data-validation-required-message="Please enter your password" />
                             <p class="help-block text-danger"></p>
@@ -49,3 +61,29 @@
             <div class="col-lg-2  mb-5"></
             </div>
     </div>
+    <script>
+        function getProvince(){
+            $.ajax({
+					type: 'GET',
+					url: "<?php echo site_url('main/getProvince');?>",
+                    success: function(hasil) {
+                        console.log(hasil);
+						$("#province").html(hasil);
+					}
+				});
+        }
+
+        $('#province').change(function()
+        {
+            $.ajax({
+					type: 'GET',
+					url: "<?php echo site_url('main/getCity');?>"+"/"+$('#province').val(),
+                    success: function(hasil) {
+                        console.log(hasil);
+						$("#city").html(hasil);
+					}
+				});
+        });
+
+        getProvince();
+    </script>

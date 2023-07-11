@@ -24,6 +24,7 @@
 
 <!-- Customized Bootstrap Stylesheet -->
     <link href="<?php echo base_url('assets/home/css/style.css'); ?>" rel="stylesheet">
+    <script src="https://code.jquery.com/jquery-3.4.1.min.js"></script>
 
 </head>
 

@@ -8,18 +8,21 @@ class Main extends CI_Controller {
         parent::__construct();
         $this->load->model('Madmin');
         $this->load->library('form_validation');
+        $this->load->library('cart');
     }
 	public function index()
-	{
-		$this->load->view('home/layout/header');
+	{   $data['produk']=$this->Madmin->get_produk()->result();
+        $data['kategori']=$this->Madmin->get_all_data('tbl_kategori')->result();
+		$this->load->view('home/layout/header', $data);
 		$this->load->view('home/layanan');
 		$this->load->view('home/home');
 		$this->load->view('home/layout/footer');
 	}
    
     public function register()
-    {
-        $this->load->view('home/layout/header');
+    {   $data['produk']=$this->Madmin->get_produk()->result();
+        $data['kategori']=$this->Madmin->get_all_data('tbl_kategori')->result();
+        $this->load->view('home/layout/header',$data);
 		$this->load->view('home/register');
 		$this->load->view('home/layout/footer');
     }
@@ -40,6 +43,7 @@ class Main extends CI_Controller {
         } else {
             // Ambil data dari form register
             $data['username'] = $this->input->post('username');
+            $data['idKota'] = $this->input->post('city');
             $password = $this->input->post('password');
             $data['password'] = password_hash($password, PASSWORD_DEFAULT); // Enkripsi password dengan password_hash()
             $data['namaKonsumen'] = $this->input->post('namaKonsumen');
@@ -60,14 +64,18 @@ class Main extends CI_Controller {
 
     public function login()
     {
-    $this->load->view('home/layout/header');
+    $data['produk']=$this->Madmin->get_produk()->result();
+    $data['kategori']=$this->Madmin->get_all_data('tbl_kategori')->result();
+    $this->load->view('home/layout/header',$data);
     $this->load->view('home/login');
     $this->load->view('home/layout/footer');
     }
 
     public function home()
     {
-    $this->load->view('home/layout/header');
+    $data['produk']=$this->Madmin->get_produk()->result();
+    $data['kategori']=$this->Madmin->get_all_data('tbl_kategori')->result();
+    $this->load->view('home/layout/header',$data);
     $this->load->view('home/layanan');
     $this->load->view('home/home');
     $this->load->view('home/layout/footer');
@@ -100,7 +108,7 @@ class Main extends CI_Controller {
             // Cek apakah data admin ada dalam database
             if ($member->num_rows() > 0) {
                 // Ambil data admin dari database
-                $member = $member->row();
+                $member = $member->row_object();
 
                 // Cek apakah password yang dimasukkan sesuai dengan password admin di database
                 if (password_verify($password, $member->password)) {
@@ -109,6 +117,7 @@ class Main extends CI_Controller {
                     // Buat session
                     $data = array(
                         'member_id'=> $member->idKonsumen,
+                        'idKotaTujuan'=> $member->idKota,
                         'member_username'=> $username,
                         'status'=> 'Aktif'
                     );
@@ -167,8 +176,126 @@ class Main extends CI_Controller {
             $this->session->set_flashdata('error', 'Silahkan login terlebih dahulu.');
             redirect('main/login');
         }
-        $this->load->view('home/layout/header');
+        $data['kategori']=$this->Madmin->get_all_data('tbl_kategori')->result();
+        $this->load->view('home/layout/header',$data);
         $this->load->view('home/home');
         $this->load->view('home/layout/footer');
     }
+    
+    public function detail_produk($idProduk)
+    {
+        if (empty($this->session->userdata('member_id'))) {
+            $this->session->set_flashdata('error', 'Silahkan login terlebih dahulu.');
+            redirect('main/login');
+        }
+        $dataWhere = array ('idProduk'=>$idProduk);
+        $data['produk']=$this->Madmin->get_by_id('tbl_produk',$dataWhere)->row_object();
+        $data['kategori']=$this->Madmin->get_all_data('tbl_kategori')->result();
+        $this->load->view('home/layout/header',$data);
+        $this->load->view('home/detail_produk',$data);
+        $this->load->view('home/layout/footer');
+    }
+
+    public function add_cart($idProduk)
+	{
+		if(empty($this->session->userdata('member_id'))){
+			echo "<script>alert('Anda harus login dulu untuk add cart');history.back()</script>";
+			exit();
+		}
+
+		$dataWhere = array('idProduk'=>$idProduk);
+		$produk = $this->Madmin->get_by_id('tbl_produk',$dataWhere)->row_object();
+		$kota = $this->Madmin->get_kota_penjual($produk->idToko)->row_object();
+	
+
+		$this->session->set_userdata('idKotaAsal',$kota->idKota);
+
+		$data = array(
+			'id' => $produk->idProduk,
+			'qty' => 1,
+			'price' => $produk->harga,
+			'name' => $produk->namaProduk,
+			'image' => $produk->foto
+		);
+
+		$this->cart->insert($data);
+		redirect("main/cart");
+	}
+
+	public function cart()
+	{
+		if(empty($this->session->userdata('member_id'))){
+			echo "<script>alert('Anda harus login dulu untuk add cart');history.back()</script>";
+			exit();
+		}
+
+		$data['kota_asal'] = $this->session->userdata('idKotaAsal');
+		$data['kota_tujuan'] = $this->session->userdata('idKotaTujuan');
+
+		$data['cartItems'] = $this->cart->contents();
+		$data['kategori']=$this->Madmin->get_all_data('tbl_kategori')->result();
+		$data['total'] = $this->cart->total();
+
+		$this->load->view('home/layout/header',$data);
+		$this->load->view('home/cart',$data);
+		$this->load->view('home/layout/footer');
+	}
+
+	public function delete_cart($rowid)
+	{
+		$remove = $this->cart->remove($rowid);
+		redirect("main/cart");
+	}
+
+    public function getProvince(){
+		$curl = curl_init(); 
+		curl_setopt_array($curl, array(
+			CURLOPT_URL => "http://api.rajaongkir.com/starter/province",
+			CURLOPT_RETURNTRANSFER => true,
+			CURLOPT_ENCODING => "",
+			CURLOPT_MAXREDIRS => 10,
+			CURLOPT_TIMEOUT => 30,
+			CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
+			CURLOPT_CUSTOMREQUEST => "GET",
+			CURLOPT_HTTPHEADER => array(
+			"key: f897bf9ef23bcb406e89c39329d3e29e"
+			),
+		));
+		$response = curl_exec($curl);
+		
+		$err = curl_error($curl);
+
+		curl_close($curl);
+		$data = json_decode($response, true);
+		echo "<option value=''>Pilih Provinsi</option>";
+		for ($i=0; $i < count($data['rajaongkir']['results']); $i++) { 
+		echo "<option value='".$data['rajaongkir']['results'][$i]['province_id']."'>".$data['rajaongkir']['results'][$i]['province']."</option>";
+		} 
+	}
+
+    public function getCity($province){
+		$curl = curl_init(); 
+		curl_setopt_array($curl, array(
+			CURLOPT_URL => "http://api.rajaongkir.com/starter/city?province=".$province,
+			CURLOPT_RETURNTRANSFER => true,
+			CURLOPT_ENCODING => "",
+			CURLOPT_MAXREDIRS => 10,
+			CURLOPT_TIMEOUT => 30,
+			CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
+			CURLOPT_CUSTOMREQUEST => "GET",
+			CURLOPT_HTTPHEADER => array(
+            "key: f897bf9ef23bcb406e89c39329d3e29e"
+			),
+		));
+		$response = curl_exec($curl);
+		$err = curl_error($curl);
+		curl_close($curl);
+		$data = json_decode($response, true);
+		echo "<option value=''>Pilih Kota</option>";
+		for ($i=0; $i < count($data['rajaongkir']['results']); $i++) { 
+		echo "<option value='".$data['rajaongkir']['results'][$i]['city_id']."'>".$data['rajaongkir']['results'][$i]['city_name']."</option>";
+		} 
+	}
+
+
 }

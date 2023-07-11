@@ -13,14 +13,16 @@ class Produk extends CI_Controller {
 	{   $data['idToko']=$idToko;
         $dataWhere = array('idToko'=>$idToko);
         $data['produk'] = $this->Madmin->get_by_id('tbl_produk', $dataWhere)->result();
-		$this->load->view('home/layout/header');
+        $data['kategori']=$this->Madmin->get_all_data('tbl_kategori')->result();
+		$this->load->view('home/layout/header',$data);
 		$this->load->view('home/produk/index', $data);
 		$this->load->view('home/layout/footer');
 	}
     public function add($idToko)
     {   $data['idToko']=$idToko;
         $data['kategori']=$this->Madmin->get_all_data('tbl_kategori')->result();
-        $this->load->view('home/layout/header');
+        $data['kategori']=$this->Madmin->get_all_data('tbl_kategori')->result();
+        $this->load->view('home/layout/header',$data);
         $this->load->view('home/produk/form_tambah', $data);
         $this->load->view('home/layout/footer');
     }
@@ -77,7 +79,7 @@ class Produk extends CI_Controller {
         $this->load->view('home/produk/form_edit', $data);
         $this->load->view('home/layout/footer');
     }
-    public function edit($idProduk){
+    public function edit(){
         $idProduk=$this->input->post('idProduk');
         $idToko=$this->input->post('idToko');
         $idKategori = $this->input->post('kategori');
