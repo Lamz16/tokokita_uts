@@ -9,6 +9,10 @@ class Main extends CI_Controller {
         $this->load->model('Madmin');
         $this->load->library('form_validation');
         $this->load->library('cart');
+        $params = array('server_key'=> 'Mid-server-PQg12Knak7F8hKySajlpYjOf', 'production'=>false);
+        $this->load->library('midtrans');
+        $this->midtrans->config($params);
+        $this->load->helper('url');
     }
 	public function index()
 	{   $data['produk']=$this->Madmin->get_produk()->result();
@@ -209,6 +213,7 @@ class Main extends CI_Controller {
 	
 
 		$this->session->set_userdata('idKotaAsal',$kota->idKota);
+        $this->session->set_userdata('idTokoPenjual',$produk->idToko);
 
 		$data = array(
 			'id' => $produk->idProduk,
@@ -296,6 +301,114 @@ class Main extends CI_Controller {
 		echo "<option value='".$data['rajaongkir']['results'][$i]['city_id']."'>".$data['rajaongkir']['results'][$i]['city_name']."</option>";
 		} 
 	}
+    public function proses_transaksi(){
+        $dataWhere = array('idKonsumen'=>$this->session->userdata('idKonsumen'));
+        $member =$this->Madmin->get_by_id('tbl_member',$dataWhere)->row_object();
 
+        $kota_asal = $this->session->userdata('idKotaAsal');
+        $kota_tujuan = $this->session->userdata('idKotaTujuan');
 
+        $this->load->helper('toko');
+        $ongkir = getOngkir($kota_asal,$kota_tujuan,'1000','jne');
+        $ongkir_value = $ongkir['rajaongkir']['results'][0]['costs'][0]['value'];
+
+        $dataInput=array(
+            'idKonsumen'=>$member->idKonsumen,
+            'idToko'=>$this->session->userdata('idTokoPenjual'),
+            'tglOrder'=>("Y-m-d"),
+            'kurir'=>"JNE Oke",
+            'Ongkir'=>$ongkir_value,
+        );
+        $this->Madmin->insert('tbl_order', $dataInput);
+        $insert_id = $this->db->insert_id();
+
+        $transaction_details = array(
+            'order_id' => $insert_id,
+            'gross_amount' => $ongkir_value + $this->cart->total(), // no decimal allowed for creditcard
+          );
+
+        // Optional
+        $item_details= [];
+        foreach($this->cart->contents()as $item){
+		$item_details = array(
+            'id' => 'ONGKIR',
+            'price' => $ongkir_value,
+            'quantity' => 1,
+            'name' => "Ongkos Kirim JNE Oke"
+          );
+        }
+
+        // Optional
+		$item_details[] = array(
+            'id' => 'ONGKIE',
+            'price' => $ongkir_value,
+            'quantity' =>  1,
+            'name' => "Ongkos Kirim JNE Oke"
+          );
+          
+          $billing_address = array(
+            'first_name'    => "$member->namaKonsumen",
+            'last_name'     => "",
+            'address'       => "$member->alamat",
+            'city'          => "$member->alamat",
+            'postal_code'   => "",
+            'phone'         => "$member->tlpn",
+            'country_code'  => 'IDN'
+          ); 
+
+          $shipping_address = array(
+            'first_name'    => "$member->namaKonsumen",
+            'last_name'     => "",
+            'address'       => "$member->alamat",
+            'city'          => "$member->alamat",
+            'postal_code'   => "",
+            'phone'         => "$member->tlpn",
+            'country_code'  => 'IDN'
+          ); 
+
+          $customer_details = array(
+            'first_name'    => "$member->namaKonsumen",
+            'last_name'     => "",
+            'email'         => "$member->email",
+            'phone'         => "$member->tlpn",
+            'billing_address'  => $billing_address,
+            'shipping_address' => $shipping_address
+          );
+
+          // Data yang akan dikirim untuk request redirect_url.
+        $credit_card['secure'] = true;
+        //ser save_card true to enable oneclick or 2click
+        //$credit_card['save_card'] = true;
+          
+        $time = time();
+        $custom_expiry = array(
+            'start_time' => date("Y-m-d H:i:s O",$time),
+            'unit' => 'minute', 
+            'duration'  => 2
+        );
+        
+        $transaction_data = array(
+            'transaction_details'=> $transaction_details,
+            'item_details'       => $item_details,
+            'customer_details'   => $customer_details,
+            'credit_card'        => $credit_card,
+            'expiry'             => $custom_expiry
+        );
+
+		error_log(json_encode($transaction_data));
+		$snapToken = $this->midtrans->getSnapToken($transaction_data);
+		error_log($snapToken);
+		echo $snapToken;
+    }
+    
+    public function finish(){
+        $result = json_decode($this->input->post('result_data'));
+
+        if($result->transaction_status=="settlement"){
+            $id = $result->order_id ;
+            $dataUpdate = array('statusOrder'=>"Dikemas");
+            $this->Madmin->update('tbl_order', $dataUpdate, 'idOrder', $id);
+            redirect('/');
+        }
+    }
 }

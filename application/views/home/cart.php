@@ -103,11 +103,50 @@
                             <h5 class="font-weight-bold">Total</h5>
                             <h5 class="font-weight-bold"><?php echo $total+$ongkir_value;?></h5>
                         </div>
-                        <button class="btn btn-block btn-primary my-3 py-3">Proceed To Checkout</button>
+                        <button id="pay-button" class="btn btn-block btn-primary my-3 py-3">Proceed To Checkout</button>
                     </div>
                 </div>
             </div>
         </div>
     </div>
     <!-- Cart End -->
+<script type="text/javascript" src="https://app.sandbox.midtrans.com/snap/snap.js" data-client-key="Mid-client-NgNLF0uK4KMwql5v"></script>
+<script src="https://code.jquery.com/jquery-3.4.1.min.js"></script>
+<script type="text/javascript">
 
+$('#pay-button').click(function (event){
+    event.preventDefault();
+    $(this).attr("disabled","disabled");
+ 
+ $.ajax({
+    url: '<?= site_url()?>/main/proses_transaksi',
+    cache: false,
+    
+    succes: function(data){
+        console.log('token= '+data);
+
+        var resultType = document.getElementById('result-type');
+        var resultData = document.getElementById('result-data');
+
+        function changeResult(type,data){
+            $("#result-type").val(type);
+            $("#result-data").val(JSON.stringify(data));
+        }
+
+        snap.pay(data, {
+            onSuccess: function(result){
+                changeResult('succes',result);
+                console.log(result.status_message);
+                console.log(result);
+                $("payment-form").submit();
+            },
+            onError:function(result){
+                changeResult('error',result);
+                console.log(result.status_message);
+                $("payment-form").submit();
+            }
+        });
+        }
+        });
+    });
+    </script>
